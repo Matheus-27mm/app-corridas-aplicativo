@@ -1,6 +1,3 @@
-from collections.abc import AsyncGenerator
-from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -9,15 +6,14 @@ from .config import settings
 from .database import Base, engine
 from .routers import abastecimentos, auth, carros, definicoes, despesas, ganhos, resumo
 
-
-@asynccontextmanager
-async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
-    # Cria as tabelas se não existirem (dev). Em produção pode usar-se Alembic.
+# Cria as tabelas se não existirem. Corre no arranque local e em cada cold start serverless
+# (no Vercel os eventos de lifespan podem não executar, por isso é feito no import).
+try:
     Base.metadata.create_all(bind=engine)
-    yield
+except Exception as exc:  # noqa: BLE001
+    print(f"[startup] Aviso: nao foi possivel criar as tabelas: {exc}")
 
-
-app = FastAPI(title="GestRun API", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="GestRun API", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,

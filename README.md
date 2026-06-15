@@ -94,8 +94,8 @@ exigem o header `Authorization: Bearer <token>`.
 
 ## ☁️ Deploy
 
-- **Frontend → Vercel**: build `npm run build`, output `dist/`.
-- **Backend → Render**: start `uvicorn app.main:app --host 0.0.0.0 --port $PORT` + PostgreSQL gerido.
+- **Frontend → Vercel** (Root Directory `frontend`): build `npm run build`, output `dist/`.
+- **Backend → Vercel** (Root Directory `backend`, função serverless via `@vercel/python`) + **Neon** (Postgres serverless gratuito) na variável `DATABASE_URL`.
 
 ## 🗺️ Roadmap
 
