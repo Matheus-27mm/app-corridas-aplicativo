@@ -130,7 +130,14 @@ export function CarroForm({ carro, open, onOpenChange, trigger }: CarroFormProps
           </div>
           <div className="space-y-1.5">
             <Label>Tipo</Label>
-            <Chips options={TIPOS_COMBUSTIVEL} value={tipo} onChange={setTipo} />
+            <Chips
+              options={TIPOS_COMBUSTIVEL}
+              value={tipo}
+              onChange={(v) => {
+                setTipo(v)
+                setConsumo('') // resetar consumo ao trocar de tipo
+              }}
+            />
           </div>
           <div className="space-y-1.5">
             <Label>Consumo médio ({unidade})</Label>
