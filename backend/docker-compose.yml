@@ -1,0 +1,19 @@
+# PostgreSQL local para desenvolvimento.
+# Usar:  docker compose up -d
+# Depois define no .env:
+#   DATABASE_URL=postgresql+psycopg://corrida:corrida@localhost:5432/corrida
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: corrida
+      POSTGRES_PASSWORD: corrida
+      POSTGRES_DB: corrida
+    ports:
+      - '5432:5432'
+    volumes:
+      - corrida_pgdata:/var/lib/postgresql/data
+
+volumes:
+  corrida_pgdata:

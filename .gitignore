@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Builds
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Editor / OS / ferramentas
+.DS_Store
+.vscode/
+.idea/
+.claude/
+
+# Python (backend)
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Base de dados local (dev)
+*.db
+*.sqlite3
+
+# Notas internas
+GEMINI-*.md
