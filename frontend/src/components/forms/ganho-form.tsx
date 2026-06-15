@@ -118,7 +118,7 @@ export function GanhoForm({ ganho, open, onOpenChange, trigger }: GanhoFormProps
           </div>
           <div className="space-y-1.5">
             <Label>Plataforma</Label>
-            <Chips options={PLATAFORMAS} value={plataforma} onChange={setPlataforma} />
+            <Chips options={PLATAFORMAS} value={plataforma} onChange={(v) => setPlataforma(v)} />
           </div>
           <div className="space-y-1.5">
             <Label>Valor bruto (€)</Label>

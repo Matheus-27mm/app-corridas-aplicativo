@@ -106,7 +106,7 @@ export function DespesaForm({ despesa, open, onOpenChange, trigger }: DespesaFor
           </div>
           <div className="space-y-1.5">
             <Label>Categoria</Label>
-            <Chips options={CATEGORIAS_DESPESA} value={categoria} onChange={setCategoria} />
+            <Chips options={CATEGORIAS_DESPESA} value={categoria} onChange={(v) => setCategoria(v)} />
           </div>
           <div className="space-y-1.5">
             <Label>Descrição</Label>

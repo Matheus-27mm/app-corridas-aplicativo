@@ -114,7 +114,7 @@ export function AbastecimentoForm({ abastecimento, open, onOpenChange, trigger }
           </div>
           <div className="space-y-1.5">
             <Label>Tipo</Label>
-            <Chips options={TIPOS_ABASTECIMENTO} value={tipo} onChange={setTipo} />
+            <Chips options={TIPOS_ABASTECIMENTO} value={tipo} onChange={(v) => setTipo(v)} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
