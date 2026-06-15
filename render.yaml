@@ -1,0 +1,30 @@
+# Render Blueprint — backend FastAPI + PostgreSQL (gratuito).
+# Render → New → Blueprint → escolhe este repositório.
+# Depois define manualmente CORS_ORIGINS com o domínio do frontend no Vercel.
+
+databases:
+  - name: gestrun-db
+    plan: free
+    databaseName: gestrun
+    user: gestrun
+
+services:
+  - type: web
+    name: gestrun-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: '3.12.7'
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gestrun-db
+          property: connectionString
+      - key: CORS_ORIGINS
+        sync: false
