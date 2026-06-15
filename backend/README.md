@@ -1,4 +1,4 @@
-# Corrida — Backend (FastAPI)
+# GestRun — Backend (FastAPI)
 
 API REST para a app Corrida. Python + FastAPI + SQLAlchemy + JWT.
 Base de dados: **SQLite** por omissão (dev) · **PostgreSQL** em produção (via `DATABASE_URL`).

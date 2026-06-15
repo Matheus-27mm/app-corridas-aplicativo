@@ -1,6 +1,6 @@
 {
-  "short_name": "Corrida",
-  "name": "Corrida — Gestão Financeira",
+  "short_name": "GestRun",
+  "name": "GestRun — Gestão de Corridas",
   "description": "Registo de ganhos e custos de motorista de TVDE (Uber/Bolt) em Portugal.",
   "icons": [
     {

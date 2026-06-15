@@ -1,4 +1,4 @@
-# 🚗 Corrida — Gestão financeira para motoristas (Uber / Bolt)
+# 🚗 GestRun — Gestão financeira para motoristas (Uber / Bolt)
 
 Aplicação web **mobile-first** para motoristas de plataformas de transporte (Uber, Bolt, etc.)
 registarem os **ganhos** e os **custos** (combustível/carregamento + despesas) e verem o

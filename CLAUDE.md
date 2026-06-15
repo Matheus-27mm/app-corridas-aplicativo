@@ -1,4 +1,4 @@
-# Corrida — gestão financeira de motorista (Uber/Bolt)
+# GestRun — gestão financeira de motorista (Uber/Bolt)
 
 App para um motorista de Uber/Bolt em Portugal: registar ganhos, descontar custos
 (abastecimentos + despesas) e mostrar o **lucro real**, com filtros por dia/mês/ano.

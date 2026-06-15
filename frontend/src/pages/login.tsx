@@ -1,4 +1,4 @@
-import { Eye, EyeOff, Lock, Mail, User } from 'lucide-react'
+import { Car, Eye, EyeOff, Lock, Mail, User } from 'lucide-react'
 import { type FormEvent, type InputHTMLAttributes, type ReactNode, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 
@@ -44,7 +44,9 @@ export function LoginPage() {
   if (user) return <Navigate to="/" replace />
 
   const podeAvancar =
-    email.trim().length > 0 && password.length > 0 && (modo === 'entrar' || nome.trim().length > 0)
+    modo === 'entrar'
+      ? email.trim().length > 0 && password.length > 0
+      : nome.trim().length > 0 && email.trim().length > 0 && password.length >= 6
 
   function avancar(e: FormEvent) {
     e.preventDefault()
@@ -71,8 +73,11 @@ export function LoginPage() {
 
       <div className="relative flex min-h-svh items-center justify-center p-4">
         <div className="w-full max-w-sm rounded-3xl border border-white/12 bg-black/45 p-6 backdrop-blur-xl">
-          <div className="mb-6 text-center">
-            <p className="text-[11px] font-bold tracking-[0.3em] text-white/60">CORRIDA</p>
+          <div className="mb-6 flex flex-col items-center text-center">
+            <div className="mb-3 flex size-14 items-center justify-center rounded-2xl bg-white text-black shadow-lg shadow-black/40">
+              <Car className="size-7" strokeWidth={2.2} />
+            </div>
+            <p className="text-[11px] font-bold tracking-[0.3em] text-white/60">GESTRUN</p>
             <h1 className="mt-1 text-2xl font-bold text-white">
               {modo === 'entrar' ? 'Bem-vindo de volta' : 'Cria a tua conta'}
             </h1>
@@ -115,6 +120,10 @@ export function LoginPage() {
                 </button>
               }
             />
+
+            {modo === 'criar' ? (
+              <p className="px-1 text-xs text-white/45">Mínimo 6 caracteres.</p>
+            ) : null}
 
             {modo === 'entrar' ? (
               <div className="flex items-center justify-between pt-1">

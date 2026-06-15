@@ -1,4 +1,4 @@
-const CACHE_NAME = 'corrida-cache-v1';
+const CACHE_NAME = 'gestrun-cache-v1';
 const ASSETS = [
   '/',
   '/index.html',
