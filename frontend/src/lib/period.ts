@@ -34,6 +34,15 @@ export function filterByPeriod<T extends { data: string }>(items: T[], period: P
   })
 }
 
+// Filtro por intervalo de datas inclusivo (ISO 'AAAA-MM-DD' compara como string).
+export function filterByRange<T extends { data: string }>(
+  items: T[],
+  inicio: string,
+  fim: string,
+): T[] {
+  return items.filter((item) => item.data >= inicio && item.data <= fim)
+}
+
 export function sumBy<T>(items: T[], selector: (item: T) => number): number {
   return items.reduce((acc, item) => acc + selector(item), 0)
 }

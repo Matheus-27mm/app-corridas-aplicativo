@@ -1,14 +1,16 @@
 import { useState, useMemo, useEffect } from 'react'
+import { JornadaDia } from '@/components/jornada-dia'
 import { PageHeader } from '@/components/page-header'
 import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { formatCurrency, formatNumber } from '@/lib/format'
-import { filterByPeriod, type Period, sumBy } from '@/lib/period'
+import { formatCurrency, formatDate, formatNumber } from '@/lib/format'
+import { filterByPeriod, filterByRange, type Period, sumBy } from '@/lib/period'
 import { cn } from '@/lib/utils'
 import { useData } from '@/store/data'
-import { Sparkles, TrendingUp, TrendingDown, Fuel, Zap, RefreshCw } from 'lucide-react'
-import { toLocalISO } from '@/lib/date'
+import { Sparkles, TrendingUp, TrendingDown, Fuel, Zap, RefreshCw, CalendarRange } from 'lucide-react'
+import { todayISO, toLocalISO } from '@/lib/date'
 import { apiFetch } from '@/lib/api'
 
 function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
@@ -49,12 +51,15 @@ interface PlataformaResumo {
 
 interface Resumo {
   periodo: string
+  inicio?: string | null
+  fim?: string | null
   ganhos: number
   custos: number
   lucro: number
   km: number
   horas: number
   corridas: number
+  kmRodados?: number | null
   lucroPorKm: number | null
   lucroPorHora: number | null
   plataformas: PlataformaResumo[]
@@ -62,7 +67,11 @@ interface Resumo {
 
 export function InicioPage() {
   const { ganhos, abastecimentos, despesas, definicoes, loading, carros } = useData()
-  const [periodo, setPeriodo] = useState<Period>('hoje')
+  const [periodo, setPeriodo] = useState<Period | 'personalizado'>('hoje')
+  const [rangeInicio, setRangeInicio] = useState(todayISO())
+  const [rangeFim, setRangeFim] = useState(todayISO())
+  const isCustom = periodo === 'personalizado'
+  const resumoQuery = isCustom ? `inicio=${rangeInicio}&fim=${rangeFim}` : `periodo=${periodo}`
   const [resumo, setResumo] = useState<Resumo | null>(null)
   const [resumoLoading, setResumoLoading] = useState(true)
 
@@ -78,7 +87,7 @@ export function InicioPage() {
       }
       setResumoLoading(true)
       try {
-        const data = await apiFetch<Resumo>(`/resumo?periodo=${periodo}`)
+        const data = await apiFetch<Resumo>(`/resumo?${resumoQuery}`)
         if (active) {
           setResumo(data)
           setResumoLoading(false)
@@ -94,11 +103,20 @@ export function InicioPage() {
     return () => {
       active = false
     }
-  }, [periodo, ganhos, abastecimentos, despesas, token])
+  }, [resumoQuery, ganhos, abastecimentos, despesas, token])
 
-  const g = useMemo(() => filterByPeriod(ganhos, periodo), [ganhos, periodo])
-  const a = useMemo(() => filterByPeriod(abastecimentos, periodo), [abastecimentos, periodo])
-  const d = useMemo(() => filterByPeriod(despesas, periodo), [despesas, periodo])
+  const g = useMemo(
+    () => (isCustom ? filterByRange(ganhos, rangeInicio, rangeFim) : filterByPeriod(ganhos, periodo as Period)),
+    [ganhos, periodo, isCustom, rangeInicio, rangeFim],
+  )
+  const a = useMemo(
+    () => (isCustom ? filterByRange(abastecimentos, rangeInicio, rangeFim) : filterByPeriod(abastecimentos, periodo as Period)),
+    [abastecimentos, periodo, isCustom, rangeInicio, rangeFim],
+  )
+  const d = useMemo(
+    () => (isCustom ? filterByRange(despesas, rangeInicio, rangeFim) : filterByPeriod(despesas, periodo as Period)),
+    [despesas, periodo, isCustom, rangeInicio, rangeFim],
+  )
 
   const totalGanhos = resumo?.ganhos ?? sumBy(g, (x) => x.valorBruto + (x.gorjetas ?? 0))
   const totalCustos = resumo?.custos ?? (sumBy(a, (x) => x.total) + sumBy(d, (x) => x.valor))
@@ -116,7 +134,10 @@ export function InicioPage() {
         ? 'Lucro da semana'
         : periodo === 'mes'
           ? 'Lucro do mês'
-          : 'Lucro total'
+          : periodo === 'personalizado'
+            ? 'Lucro do período'
+            : 'Lucro total'
+  const rangeLabel = isCustom ? `${formatDate(rangeInicio)} – ${formatDate(rangeFim)}` : null
   const meta =
     periodo === 'hoje'
       ? definicoes.metaDiaria
@@ -400,6 +421,10 @@ export function InicioPage() {
     <>
       <PageHeader title="Início" subtitle="Resumo financeiro" />
 
+      <div className="mb-4">
+        <JornadaDia />
+      </div>
+
       {resumo === null && !isMock && !resumoLoading && (
         <div className="mb-3 flex items-center justify-between gap-2 rounded-xl bg-destructive/10 border border-destructive/20 px-3 py-2 text-xs text-destructive-foreground animate-in fade-in duration-200">
           <span>Não foi possível carregar o resumo do servidor (dados offline).</span>
@@ -407,7 +432,7 @@ export function InicioPage() {
             type="button"
             onClick={() => {
               setResumoLoading(true)
-              apiFetch<Resumo>(`/resumo?periodo=${periodo}`)
+              apiFetch<Resumo>(`/resumo?${resumoQuery}`)
                 .then(setResumo)
                 .catch(console.error)
                 .finally(() => setResumoLoading(false))
@@ -419,7 +444,7 @@ export function InicioPage() {
         </div>
       )}
 
-      <Tabs value={periodo} onValueChange={(v) => setPeriodo(v as Period)} className="mb-4">
+      <Tabs value={isCustom ? '' : periodo} onValueChange={(v) => setPeriodo(v as Period)} className="mb-2">
         <TabsList className="w-full bg-muted/50 border border-border/10">
           <TabsTrigger value="hoje" className="flex-1">Hoje</TabsTrigger>
           <TabsTrigger value="semana" className="flex-1">Semana</TabsTrigger>
@@ -428,11 +453,52 @@ export function InicioPage() {
         </TabsList>
       </Tabs>
 
+      <div className="mb-4">
+        <button
+          type="button"
+          onClick={() => setPeriodo(isCustom ? 'hoje' : 'personalizado')}
+          className={cn(
+            'flex w-full items-center justify-center gap-2 rounded-lg border py-2 text-xs font-medium transition-colors',
+            isCustom
+              ? 'border-primary/60 bg-primary/10 text-foreground'
+              : 'border-border/40 bg-card/40 text-muted-foreground hover:bg-muted/30',
+          )}
+        >
+          <CalendarRange className="size-3.5" />
+          {isCustom ? 'A usar intervalo personalizado (toca para sair)' : 'Período personalizado'}
+        </button>
+        {isCustom ? (
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <label className="px-1 text-[10px] text-muted-foreground">De</label>
+              <Input
+                type="date"
+                value={rangeInicio}
+                max={rangeFim}
+                onChange={(e) => setRangeInicio(e.target.value)}
+                style={{ colorScheme: 'dark' }}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="px-1 text-[10px] text-muted-foreground">Até</label>
+              <Input
+                type="date"
+                value={rangeFim}
+                min={rangeInicio}
+                onChange={(e) => setRangeFim(e.target.value)}
+                style={{ colorScheme: 'dark' }}
+              />
+            </div>
+          </div>
+        ) : null}
+      </div>
+
       {/* Main Profit Card */}
       <Card className="relative overflow-hidden gap-1 p-5 border-border/40 bg-card/60 backdrop-blur-md">
         <div className="flex justify-between items-start">
           <div className="space-y-0.5">
             <p className="text-xs text-muted-foreground">{lucroLabel}</p>
+            {rangeLabel ? <p className="text-[10px] text-muted-foreground/70">{rangeLabel}</p> : null}
             <p className={cn('text-3xl font-extrabold tabular-nums tracking-tight', lucro >= 0 ? 'text-emerald-500' : 'text-red-500')}>
               {formatCurrency(lucro)}
             </p>
@@ -464,6 +530,16 @@ export function InicioPage() {
         <Stat label="Lucro / km" value={lucroPorKm != null ? formatCurrency(lucroPorKm) : '—'} sub={km > 0 ? `${formatNumber(km, 0)} km percorridos` : 'Sem km inseridos'} />
         <Stat label="Lucro / hora" value={lucroPorHora != null ? formatCurrency(lucroPorHora) : '—'} sub={horas > 0 ? `${formatNumber(horas, 1)} horas online` : 'Sem horas inseridas'} />
       </div>
+
+      {resumo?.kmRodados != null ? (
+        <div className="mt-3">
+          <Stat
+            label="Km rodados (hodómetro)"
+            value={`${formatNumber(resumo.kmRodados, 0)} km`}
+            sub="Soma das jornadas no período"
+          />
+        </div>
+      ) : null}
 
       {/* Resumo por Plataforma */}
       <Card className="mt-3 p-4 border-border/40 bg-card/40 gap-3">

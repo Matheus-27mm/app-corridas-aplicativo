@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { apiFetch } from '@/lib/api'
 import { MOEDA_PADRAO } from '@/lib/domain'
 import { setMoeda } from '@/lib/format'
-import type { Abastecimento, Carro, Definicoes, Despesa, Ganho, Lembrete } from '@/types/models'
+import type { Abastecimento, Carro, Definicoes, Despesa, Ganho, Jornada, Lembrete } from '@/types/models'
 import { toast } from 'sonner'
 
 interface DataState {
@@ -29,6 +29,10 @@ interface DataState {
   lembretes: Lembrete[]
   addLembrete: (lembrete: Omit<Lembrete, 'id'>) => Promise<void>
   removeLembrete: (id: string) => Promise<void>
+  jornadas: Jornada[]
+  abrirDia: (data: string, kmInicio: number) => Promise<void>
+  fecharDia: (id: string, kmFim: number) => Promise<void>
+  removeJornada: (id: string) => Promise<void>
 }
 
 export const useData = create<DataState>((set) => ({
@@ -37,6 +41,7 @@ export const useData = create<DataState>((set) => ({
   abastecimentos: [],
   despesas: [],
   lembretes: [],
+  jornadas: [],
   definicoes: { moeda: MOEDA_PADRAO, metaDiaria: 80, metaMensal: 1800 },
   loading: false,
 
@@ -47,13 +52,14 @@ export const useData = create<DataState>((set) => ({
 
     set({ loading: true })
     try {
-      const [carros, ganhos, abastecimentos, despesas, definicoes, lembretes] = await Promise.all([
+      const [carros, ganhos, abastecimentos, despesas, definicoes, lembretes, jornadas] = await Promise.all([
         apiFetch<Carro[]>('/carros'),
         apiFetch<Ganho[]>('/ganhos'),
         apiFetch<Abastecimento[]>('/abastecimentos'),
         apiFetch<Despesa[]>('/despesas'),
         apiFetch<Definicoes>('/definicoes'),
         apiFetch<Lembrete[]>('/lembretes'),
+        apiFetch<Jornada[]>('/jornadas'),
       ])
 
       setMoeda(definicoes.moeda)
@@ -65,6 +71,7 @@ export const useData = create<DataState>((set) => ({
         despesas,
         definicoes,
         lembretes,
+        jornadas,
         loading: false,
       })
     } catch (err: any) {
@@ -254,6 +261,45 @@ export const useData = create<DataState>((set) => ({
       toast.success('Lembrete removido')
     } catch (err: any) {
       toast.error(err.message || 'Erro ao remover lembrete')
+      throw err
+    }
+  },
+
+  abrirDia: async (data, kmInicio) => {
+    try {
+      const res = await apiFetch<Jornada>('/jornadas', {
+        method: 'POST',
+        body: JSON.stringify({ data, kmInicio }),
+      })
+      set((s) => ({ jornadas: [res, ...s.jornadas] }))
+      toast.success('Dia iniciado')
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao iniciar o dia')
+      throw err
+    }
+  },
+
+  fecharDia: async (id, kmFim) => {
+    try {
+      const res = await apiFetch<Jornada>(`/jornadas/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ kmFim }),
+      })
+      set((s) => ({ jornadas: s.jornadas.map((x) => (x.id === id ? res : x)) }))
+      toast.success('Dia fechado')
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao fechar o dia')
+      throw err
+    }
+  },
+
+  removeJornada: async (id) => {
+    try {
+      await apiFetch(`/jornadas/${id}`, { method: 'DELETE' })
+      set((s) => ({ jornadas: s.jornadas.filter((x) => x.id !== id) }))
+      toast.success('Jornada removida')
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao remover jornada')
       throw err
     }
   },

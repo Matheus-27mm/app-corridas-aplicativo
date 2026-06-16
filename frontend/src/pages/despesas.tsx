@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { DespesaForm } from '@/components/forms/despesa-form'
 import { PageHeader } from '@/components/page-header'
+import { ExpenseIcon } from '@/components/expense-icon'
 import { RecordRow } from '@/components/record-row'
 import { Card } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -52,7 +53,7 @@ export function DespesasPage() {
           filteredItems.map((despesa) => (
             <RecordRow
               key={despesa.id}
-              badge={labelOf(CATEGORIAS_DESPESA, despesa.categoria).charAt(0)}
+              icon={<ExpenseIcon categoria={despesa.categoria} className="size-5" />}
               title={`${labelOf(CATEGORIAS_DESPESA, despesa.categoria)} · ${formatDate(despesa.data)}`}
               subtitle={despesa.descricao ?? undefined}
               amount={formatCurrency(despesa.valor)}

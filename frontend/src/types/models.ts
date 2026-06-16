@@ -5,6 +5,7 @@ export type Plataforma = 'uber' | 'bolt' | 'outro'
 export type TipoCombustivel = 'gasolina' | 'gasoleo' | 'eletrico' | 'hibrido'
 export type TipoAbastecimento = 'combustivel' | 'eletrico'
 export type CategoriaDespesa =
+  | 'aluguer'
   | 'manutencao'
   | 'seguro'
   | 'iuc'
@@ -66,4 +67,12 @@ export interface Lembrete {
   tipo: TipoLembrete
   descricao: string
   data: string
+}
+
+export interface Jornada {
+  id: string
+  data: string
+  kmInicio: number | null
+  kmFim: number | null
+  kmRodados: number | null // calculado no backend (kmFim - kmInicio)
 }

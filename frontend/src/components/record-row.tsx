@@ -1,9 +1,11 @@
 import { X } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 
 export function RecordRow({
   badge,
+  icon,
   title,
   subtitle,
   amount,
@@ -11,6 +13,7 @@ export function RecordRow({
   onClick,
 }: {
   badge?: string
+  icon?: ReactNode
   title: string
   subtitle?: string
   amount?: string
@@ -18,14 +21,18 @@ export function RecordRow({
   onClick?: () => void
 }) {
   return (
-    <Card 
+    <Card
       onClick={onClick}
       className={cn(
         "flex flex-row items-center gap-3 p-3",
         onClick && "cursor-pointer hover:bg-muted/40 hover:border-border transition-all duration-200 active:scale-[0.99]"
       )}
     >
-      {badge ? (
+      {icon ? (
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-foreground">
+          {icon}
+        </div>
+      ) : badge ? (
         <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-foreground">
           {badge}
         </div>
