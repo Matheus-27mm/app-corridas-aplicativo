@@ -4,8 +4,21 @@ import { toast } from 'sonner'
 
 export interface Utilizador {
   id: string
+  username: string
+  primeiroNome: string
+  sobrenome: string
   nome: string
   email: string
+  dataNascimento?: string | null
+}
+
+export interface RegisterPayload {
+  username: string
+  primeiroNome: string
+  sobrenome: string
+  email: string
+  dataNascimento: string
+  password: string
 }
 
 export type Provedor = 'google' | 'apple'
@@ -13,8 +26,8 @@ export type Provedor = 'google' | 'apple'
 interface AuthState {
   user: Utilizador | null
   loading: boolean
-  signInWithEmail: (email: string, password: string) => Promise<void>
-  signUpWithEmail: (nome: string, email: string, password: string) => Promise<void>
+  signIn: (login: string, password: string) => Promise<void>
+  signUp: (payload: RegisterPayload) => Promise<void>
   signInWithProvider: (provedor: Provedor) => void
   signOut: () => void
   checkAuth: () => Promise<void>
@@ -33,12 +46,12 @@ export const useAuth = create<AuthState>((set) => ({
   user: getStoredUser(),
   loading: false,
 
-  signInWithEmail: async (email, password) => {
+  signIn: async (login, password) => {
     set({ loading: true })
     try {
       const res = await apiFetch<{ access_token: string; user: Utilizador }>('/auth/login', {
         method: 'POST',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ login, password }),
       })
       localStorage.setItem('corrida_token', res.access_token)
       localStorage.setItem('corrida_user', JSON.stringify(res.user))
@@ -51,12 +64,12 @@ export const useAuth = create<AuthState>((set) => ({
     }
   },
 
-  signUpWithEmail: async (nome, email, password) => {
+  signUp: async (payload) => {
     set({ loading: true })
     try {
       const res = await apiFetch<{ access_token: string; user: Utilizador }>('/auth/register', {
         method: 'POST',
-        body: JSON.stringify({ nome, email, password }),
+        body: JSON.stringify(payload),
       })
       localStorage.setItem('corrida_token', res.access_token)
       localStorage.setItem('corrida_user', JSON.stringify(res.user))
@@ -70,15 +83,30 @@ export const useAuth = create<AuthState>((set) => ({
   },
 
   signInWithProvider: (provedor) => {
-    // Mantém mock para provedores
-    const mockUser = provedor === 'google'
-      ? { id: 'google_user', nome: 'Conta Google', email: 'utilizador@gmail.com' }
-      : { id: 'apple_user', nome: 'Conta Apple', email: 'utilizador@icloud.com' }
-    
+    // Mantém mock para provedores (OAuth real fica para depois).
+    const mockUser: Utilizador =
+      provedor === 'google'
+        ? {
+            id: 'google_user',
+            username: 'conta_google',
+            primeiroNome: 'Conta',
+            sobrenome: 'Google',
+            nome: 'Conta Google',
+            email: 'utilizador@gmail.com',
+          }
+        : {
+            id: 'apple_user',
+            username: 'conta_apple',
+            primeiroNome: 'Conta',
+            sobrenome: 'Apple',
+            nome: 'Conta Apple',
+            email: 'utilizador@icloud.com',
+          }
+
     localStorage.setItem('corrida_token', 'mock_jwt_token_provider')
     localStorage.setItem('corrida_user', JSON.stringify(mockUser))
     set({ user: mockUser })
-    toast.success('Sessão iniciada (Mock)!')
+    toast.success('Sessão iniciada (demo).')
   },
 
   signOut: () => {
@@ -94,7 +122,6 @@ export const useAuth = create<AuthState>((set) => ({
       set({ user: null })
       return
     }
-    // Se for token do provedor mock, ignorar chamada real
     if (token.startsWith('mock_')) {
       return
     }

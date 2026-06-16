@@ -1,4 +1,4 @@
-import { Car, Eye, EyeOff, Lock, Mail, User } from 'lucide-react'
+import { AtSign, Calendar, Car, Eye, EyeOff, Lock, Mail, User } from 'lucide-react'
 import { type FormEvent, type InputHTMLAttributes, type ReactNode, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 
@@ -30,48 +30,87 @@ function Field({ icon, right, ...props }: FieldProps) {
 export function LoginPage() {
   const user = useAuth((s) => s.user)
   const loading = useAuth((s) => s.loading)
-  const signInWithEmail = useAuth((s) => s.signInWithEmail)
-  const signUpWithEmail = useAuth((s) => s.signUpWithEmail)
+  const signIn = useAuth((s) => s.signIn)
+  const signUp = useAuth((s) => s.signUp)
   const signInWithProvider = useAuth((s) => s.signInWithProvider)
 
   const [modo, setModo] = useState<Modo>('entrar')
-  const [nome, setNome] = useState('')
+
+  // Login
+  const [loginId, setLoginId] = useState('')
+
+  // Registo
+  const [primeiroNome, setPrimeiroNome] = useState('')
+  const [sobrenome, setSobrenome] = useState('')
+  const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
+  const [dataNascimento, setDataNascimento] = useState('')
+
+  // Comum
   const [password, setPassword] = useState('')
+  const [confirmar, setConfirmar] = useState('')
   const [verPassword, setVerPassword] = useState(false)
   const [lembrar, setLembrar] = useState(true)
 
   if (user) return <Navigate to="/" replace />
 
+  const senhasIguais = password === confirmar
   const podeAvancar =
     modo === 'entrar'
-      ? email.trim().length > 0 && password.length > 0
-      : nome.trim().length > 0 && email.trim().length > 0 && password.length >= 6
+      ? loginId.trim().length > 0 && password.length > 0
+      : primeiroNome.trim().length > 0 &&
+        sobrenome.trim().length > 0 &&
+        username.trim().length > 0 &&
+        email.trim().length > 0 &&
+        dataNascimento.length > 0 &&
+        password.length >= 6 &&
+        senhasIguais
 
-  function avancar(e: FormEvent) {
+  async function avancar(e: FormEvent) {
     e.preventDefault()
-    if (!podeAvancar) return
-    if (modo === 'entrar') signInWithEmail(email, password)
-    else signUpWithEmail(nome, email, password)
+    if (!podeAvancar || loading) return
+    try {
+      if (modo === 'entrar') {
+        await signIn(loginId.trim(), password)
+      } else {
+        await signUp({
+          username: username.trim(),
+          primeiroNome: primeiroNome.trim(),
+          sobrenome: sobrenome.trim(),
+          email: email.trim(),
+          dataNascimento,
+          password,
+        })
+      }
+    } catch {
+      // erro já tratado no store (toast)
+    }
   }
 
-  function entrarCom(provedor: Provedor) {
-    signInWithProvider(provedor)
-  }
+  const eyeToggle = (
+    <button
+      type="button"
+      onClick={() => setVerPassword((v) => !v)}
+      className="text-white/55 hover:text-white"
+      aria-label={verPassword ? 'Ocultar palavra-passe' : 'Mostrar palavra-passe'}
+    >
+      {verPassword ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}
+    </button>
+  )
 
   return (
     <div className="relative min-h-svh w-full overflow-hidden bg-black">
       <video
-        className="absolute inset-0 size-full object-cover"
+        className="fixed inset-0 size-full object-cover"
         src="/povdriving.mp4"
         autoPlay
         muted
         loop
         playsInline
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/35 to-black/90" />
+      <div className="fixed inset-0 bg-gradient-to-b from-black/55 via-black/35 to-black/90" />
 
-      <div className="relative flex min-h-svh items-center justify-center p-4">
+      <div className="relative flex min-h-svh items-start justify-center overflow-y-auto p-4 py-8">
         <div className="w-full max-w-sm rounded-3xl border border-white/12 bg-black/45 p-6 backdrop-blur-xl">
           <div className="mb-6 flex flex-col items-center text-center">
             <div className="mb-3 flex size-14 items-center justify-center rounded-2xl bg-white text-black shadow-lg shadow-black/40">
@@ -85,23 +124,57 @@ export function LoginPage() {
           </div>
 
           <form onSubmit={avancar} className="space-y-3">
-            {modo === 'criar' ? (
+            {modo === 'entrar' ? (
               <Field
                 icon={<User className="size-[18px]" />}
-                placeholder="Nome"
-                value={nome}
-                onChange={(e) => setNome(e.target.value)}
-                autoCapitalize="words"
+                placeholder="Email ou nome de utilizador"
+                value={loginId}
+                onChange={(e) => setLoginId(e.target.value)}
+                autoCapitalize="none"
               />
-            ) : null}
-
-            <Field
-              icon={<Mail className="size-[18px]" />}
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field
+                    icon={<User className="size-[18px]" />}
+                    placeholder="Primeiro nome"
+                    value={primeiroNome}
+                    onChange={(e) => setPrimeiroNome(e.target.value)}
+                    autoCapitalize="words"
+                  />
+                  <Field
+                    icon={<User className="size-[18px]" />}
+                    placeholder="Sobrenome"
+                    value={sobrenome}
+                    onChange={(e) => setSobrenome(e.target.value)}
+                    autoCapitalize="words"
+                  />
+                </div>
+                <Field
+                  icon={<AtSign className="size-[18px]" />}
+                  placeholder="Nome de utilizador"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  autoCapitalize="none"
+                />
+                <Field
+                  icon={<Mail className="size-[18px]" />}
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoCapitalize="none"
+                />
+                <Field
+                  icon={<Calendar className="size-[18px]" />}
+                  type="date"
+                  value={dataNascimento}
+                  onChange={(e) => setDataNascimento(e.target.value)}
+                  style={{ colorScheme: 'dark' }}
+                  aria-label="Data de nascimento"
+                />
+              </>
+            )}
 
             <Field
               icon={<Lock className="size-[18px]" />}
@@ -109,20 +182,26 @@ export function LoginPage() {
               placeholder="Palavra-passe"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              right={
-                <button
-                  type="button"
-                  onClick={() => setVerPassword((v) => !v)}
-                  className="text-white/55 hover:text-white"
-                  aria-label={verPassword ? 'Ocultar palavra-passe' : 'Mostrar palavra-passe'}
-                >
-                  {verPassword ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}
-                </button>
-              }
+              autoCapitalize="none"
+              right={eyeToggle}
             />
 
             {modo === 'criar' ? (
-              <p className="px-1 text-xs text-white/45">Mínimo 6 caracteres.</p>
+              <>
+                <Field
+                  icon={<Lock className="size-[18px]" />}
+                  type={verPassword ? 'text' : 'password'}
+                  placeholder="Confirmar palavra-passe"
+                  value={confirmar}
+                  onChange={(e) => setConfirmar(e.target.value)}
+                  autoCapitalize="none"
+                />
+                {confirmar.length > 0 && !senhasIguais ? (
+                  <p className="px-1 text-xs text-red-400">As palavras-passe não coincidem.</p>
+                ) : (
+                  <p className="px-1 text-xs text-white/45">Palavra-passe com mínimo 6 caracteres.</p>
+                )}
+              </>
             ) : null}
 
             {modo === 'entrar' ? (
@@ -140,9 +219,9 @@ export function LoginPage() {
             <button
               type="submit"
               disabled={!podeAvancar || loading}
-              className="mt-1 w-full rounded-xl bg-white py-3 font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-45 flex items-center justify-center gap-2"
+              className="mt-1 flex w-full items-center justify-center gap-2 rounded-xl bg-white py-3 font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-45"
             >
-              {loading ? 'A carregar...' : (modo === 'entrar' ? 'Entrar' : 'Criar conta')}
+              {loading ? 'A carregar…' : modo === 'entrar' ? 'Entrar' : 'Criar conta'}
             </button>
           </form>
 
@@ -155,14 +234,14 @@ export function LoginPage() {
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
-              onClick={() => entrarCom('google')}
+              onClick={() => signInWithProvider('google' as Provedor)}
               className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-medium text-white transition-colors hover:bg-white/10"
             >
               <GoogleIcon className="size-4" /> Google
             </button>
             <button
               type="button"
-              onClick={() => entrarCom('apple')}
+              onClick={() => signInWithProvider('apple' as Provedor)}
               className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-medium text-white transition-colors hover:bg-white/10"
             >
               <AppleIcon className="size-4" /> Apple

@@ -19,8 +19,11 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uuid)
-    nome: Mapped[str] = mapped_column(String(120))
+    username: Mapped[str] = mapped_column(String(40), unique=True, index=True)
+    primeiro_nome: Mapped[str] = mapped_column(String(80))
+    sobrenome: Mapped[str] = mapped_column(String(80))
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    data_nascimento: Mapped[date | None] = mapped_column(Date, nullable=True)
     hashed_password: Mapped[str] = mapped_column(String(255))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 

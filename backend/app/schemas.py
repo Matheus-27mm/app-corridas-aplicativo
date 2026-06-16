@@ -1,6 +1,6 @@
 from datetime import date
 
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, computed_field
 from pydantic.alias_generators import to_camel
 
 
@@ -17,20 +17,31 @@ class CamelModel(BaseModel):
 # --- Auth ---
 
 class RegisterIn(CamelModel):
-    nome: str
+    username: str
+    primeiro_nome: str
+    sobrenome: str
     email: EmailStr
+    data_nascimento: date
     password: str
 
 
 class LoginIn(CamelModel):
-    email: EmailStr
+    login: str  # email ou nome de utilizador
     password: str
 
 
 class UserOut(CamelModel):
     id: str
-    nome: str
+    username: str
+    primeiro_nome: str
+    sobrenome: str
     email: EmailStr
+    data_nascimento: date | None = None
+
+    @computed_field
+    @property
+    def nome(self) -> str:
+        return f"{self.primeiro_nome} {self.sobrenome}".strip()
 
 
 # Resposta do token em snake_case (convenção OAuth2 — o frontend lê `access_token`).
