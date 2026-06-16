@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gestrun-cache-v1';
+const CACHE_NAME = 'gestrun-cache-v2';
 const ASSETS = [
   '/',
   '/index.html',
@@ -9,56 +9,55 @@ const ASSETS = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
   );
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-    })
+    caches.keys().then((keys) =>
+      Promise.all(keys.map((key) => (key !== CACHE_NAME ? caches.delete(key) : undefined)))
+    )
   );
   self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
-  // Apenas intercetar requisições locais GET para não interferir com a API do backend
-  if (event.request.method !== 'GET' || !event.request.url.startsWith(self.location.origin)) {
+  const req = event.request;
+
+  // Só interceta GET do mesmo domínio; chamadas à API (outro domínio) passam diretas.
+  if (req.method !== 'GET' || !req.url.startsWith(self.location.origin)) {
     return;
   }
 
-  // Não cachear chamadas de API
-  if (event.request.url.includes('/auth/') || event.request.url.includes('/ganhos') || event.request.url.includes('/despesas') || event.request.url.includes('/abastecimentos') || event.request.url.includes('/carros')) {
+  const isHTML =
+    req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html');
+
+  if (isHTML) {
+    // HTML: network-first → garante sempre a versão mais recente (cai para cache se offline).
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put('/', copy));
+          return res;
+        })
+        .catch(() => caches.match(req).then((c) => c || caches.match('/')))
+    );
     return;
   }
 
+  // Restantes estáticos (assets com hash no nome): cache-first.
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request).then((response) => {
-        if (!response || response.status !== 200 || response.type !== 'basic') {
-          return response;
+    caches.match(req).then((cached) => {
+      if (cached) return cached;
+      return fetch(req).then((res) => {
+        if (res && res.status === 200 && res.type === 'basic') {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
         }
-        const responseToCache = response.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
-        });
-        return response;
-      }).catch(() => {
-        // Fallback offline básico
-        return caches.match('/');
+        return res;
       });
     })
   );
