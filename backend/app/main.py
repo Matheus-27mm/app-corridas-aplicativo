@@ -13,7 +13,7 @@ try:
 except Exception as exc:  # noqa: BLE001
     print(f"[startup] Aviso: nao foi possivel criar as tabelas: {exc}")
 
-app = FastAPI(title="GestRun API", version="0.1.0")
+app = FastAPI(title="GestRun API", version="0.1.1")
 
 app.add_middleware(
     CORSMiddleware,
