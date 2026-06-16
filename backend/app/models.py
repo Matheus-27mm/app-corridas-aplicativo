@@ -1,7 +1,7 @@
 import uuid
 from datetime import date, datetime, timezone
 
-from sqlalchemy import Date, DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy import Date, DateTime, Float, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .database import Base
@@ -98,3 +98,16 @@ class Lembrete(Base):
     tipo: Mapped[str] = mapped_column(String(20))
     descricao: Mapped[str | None] = mapped_column(String(255), nullable=True)
     data: Mapped[date] = mapped_column(Date, index=True)
+
+
+class Jornada(Base):
+    """Dia de trabalho: km do hodómetro ao abrir e ao fechar o dia."""
+
+    __tablename__ = "jornadas"
+    __table_args__ = (UniqueConstraint("user_id", "data", name="uq_jornada_user_data"),)
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uuid)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    data: Mapped[date] = mapped_column(Date, index=True)
+    km_inicio: Mapped[float | None] = mapped_column(Float, nullable=True)
+    km_fim: Mapped[float | None] = mapped_column(Float, nullable=True)

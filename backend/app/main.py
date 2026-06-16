@@ -12,6 +12,7 @@ from .routers import (
     despesas,
     export,
     ganhos,
+    jornadas,
     lembretes,
     resumo,
 )
@@ -23,7 +24,7 @@ try:
 except Exception as exc:  # noqa: BLE001
     print(f"[startup] Aviso: nao foi possivel criar as tabelas: {exc}")
 
-app = FastAPI(title="GestRun API", version="0.1.1")
+app = FastAPI(title="GestRun API", version="0.2.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -41,6 +42,7 @@ app.include_router(despesas.router)
 app.include_router(definicoes.router)
 app.include_router(resumo.router)
 app.include_router(lembretes.router)
+app.include_router(jornadas.router)
 app.include_router(export.router)
 
 

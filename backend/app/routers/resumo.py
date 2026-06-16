@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from ..models import Abastecimento, Despesa, Ganho, User
+from ..models import Abastecimento, Despesa, Ganho, Jornada, User
 from ..schemas import PlataformaResumo, ResumoOut
 from ..security import get_current_user
 
@@ -30,27 +30,50 @@ def _intervalo(periodo: str) -> tuple[date | None, date | None]:
     return None, None
 
 
+def _parse_data(valor: str | None) -> date | None:
+    if not valor:
+        return None
+    try:
+        return date.fromisoformat(valor)
+    except ValueError:
+        return None
+
+
 @router.get("", response_model=ResumoOut)
 def resumo(
     periodo: str = "hoje",
+    inicio: str | None = None,
+    fim: str | None = None,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> ResumoOut:
-    if periodo not in PERIODOS:
-        periodo = "hoje"
-    inicio, fim = _intervalo(periodo)
+    # Intervalo personalizado (datas inclusivas) tem prioridade sobre o `periodo`.
+    d_inicio = _parse_data(inicio)
+    d_fim = _parse_data(fim)
+    if d_inicio and d_fim:
+        if d_fim < d_inicio:
+            d_inicio, d_fim = d_fim, d_inicio
+        periodo = "intervalo"
+        ini, fim_excl = d_inicio, d_fim + timedelta(days=1)  # half-open [ini, fim_excl)
+    else:
+        if periodo not in PERIODOS:
+            periodo = "hoje"
+        ini, fim_excl = _intervalo(periodo)
 
     gq = db.query(Ganho).filter(Ganho.user_id == user.id)
     aq = db.query(Abastecimento).filter(Abastecimento.user_id == user.id)
     dq = db.query(Despesa).filter(Despesa.user_id == user.id)
-    if inicio and fim:
-        gq = gq.filter(Ganho.data >= inicio, Ganho.data < fim)
-        aq = aq.filter(Abastecimento.data >= inicio, Abastecimento.data < fim)
-        dq = dq.filter(Despesa.data >= inicio, Despesa.data < fim)
+    jq = db.query(Jornada).filter(Jornada.user_id == user.id)
+    if ini and fim_excl:
+        gq = gq.filter(Ganho.data >= ini, Ganho.data < fim_excl)
+        aq = aq.filter(Abastecimento.data >= ini, Abastecimento.data < fim_excl)
+        dq = dq.filter(Despesa.data >= ini, Despesa.data < fim_excl)
+        jq = jq.filter(Jornada.data >= ini, Jornada.data < fim_excl)
 
     ganhos = gq.all()
     abastecimentos = aq.all()
     despesas = dq.all()
+    jornadas = jq.all()
 
     total_ganhos = sum(g.valor_bruto + (g.gorjetas or 0) for g in ganhos)
     total_custos = sum(a.total for a in abastecimentos) + sum(d.valor for d in despesas)
@@ -58,6 +81,10 @@ def resumo(
     km = sum(g.km or 0 for g in ganhos)
     horas = sum(g.horas or 0 for g in ganhos)
     corridas = sum(g.num_corridas or 0 for g in ganhos)
+
+    # Km do hodómetro: soma dos km rodados nas jornadas completas (km início e fim presentes).
+    jornadas_completas = [j for j in jornadas if j.km_inicio is not None and j.km_fim is not None]
+    km_rodados = sum(j.km_fim - j.km_inicio for j in jornadas_completas) if jornadas_completas else None
 
     por_plataforma: dict[str, dict[str, float]] = {}
     for g in ganhos:
@@ -84,12 +111,15 @@ def resumo(
 
     return ResumoOut(
         periodo=periodo,
+        inicio=ini,
+        fim=(fim_excl - timedelta(days=1)) if fim_excl else None,
         ganhos=total_ganhos,
         custos=total_custos,
         lucro=lucro,
         km=km,
         horas=horas,
         corridas=corridas,
+        km_rodados=km_rodados,
         lucro_por_km=(lucro / km) if km > 0 else None,
         lucro_por_hora=(lucro / horas) if horas > 0 else None,
         plataformas=plataformas,

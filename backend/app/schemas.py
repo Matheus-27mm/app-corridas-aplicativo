@@ -143,6 +143,30 @@ class LembreteOut(LembreteBase):
     id: str
 
 
+# --- Jornada (dia de trabalho: km início/fim) ---
+
+class JornadaBase(CamelModel):
+    data: date
+    km_inicio: float | None = Field(default=None, ge=0)
+    km_fim: float | None = Field(default=None, ge=0)
+
+
+class JornadaUpdate(CamelModel):
+    km_inicio: float | None = Field(default=None, ge=0)
+    km_fim: float | None = Field(default=None, ge=0)
+
+
+class JornadaOut(JornadaBase):
+    id: str
+
+    @computed_field
+    @property
+    def km_rodados(self) -> float | None:
+        if self.km_inicio is not None and self.km_fim is not None:
+            return self.km_fim - self.km_inicio
+        return None
+
+
 # --- Resumo / estatísticas ---
 
 class PlataformaResumo(CamelModel):
@@ -157,12 +181,15 @@ class PlataformaResumo(CamelModel):
 
 class ResumoOut(CamelModel):
     periodo: str
+    inicio: date | None = None
+    fim: date | None = None
     ganhos: float
     custos: float
     lucro: float
     km: float
     horas: float
     corridas: int
+    km_rodados: float | None = None  # km do hodómetro (jornadas) no período
     lucro_por_km: float | None = None
     lucro_por_hora: float | None = None
     plataformas: list[PlataformaResumo]
