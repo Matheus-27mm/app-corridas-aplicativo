@@ -1,6 +1,6 @@
 from datetime import date
 
-from pydantic import BaseModel, ConfigDict, EmailStr, computed_field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field
 from pydantic.alias_generators import to_camel
 
 
@@ -17,17 +17,25 @@ class CamelModel(BaseModel):
 # --- Auth ---
 
 class RegisterIn(CamelModel):
-    username: str
-    primeiro_nome: str
-    sobrenome: str
+    username: str = Field(min_length=3, max_length=40)
+    primeiro_nome: str = Field(min_length=1, max_length=80)
+    sobrenome: str = Field(min_length=1, max_length=80)
     email: EmailStr
     data_nascimento: date
-    password: str
+    password: str = Field(min_length=6)
 
 
 class LoginIn(CamelModel):
     login: str  # email ou nome de utilizador
     password: str
+
+
+class ProfileUpdateIn(CamelModel):
+    username: str = Field(min_length=3, max_length=40)
+    primeiro_nome: str = Field(min_length=1, max_length=80)
+    sobrenome: str = Field(min_length=1, max_length=80)
+    email: EmailStr
+    data_nascimento: date
 
 
 class UserOut(CamelModel):
@@ -55,12 +63,12 @@ class TokenOut(BaseModel):
 # --- Carro ---
 
 class CarroBase(CamelModel):
-    marca: str
-    modelo: str
-    ano: int
-    matricula: str
+    marca: str = Field(min_length=1, max_length=80)
+    modelo: str = Field(min_length=1, max_length=80)
+    ano: int = Field(ge=1900, le=2100)
+    matricula: str = Field(max_length=20)
     tipo: str
-    consumo_medio: float | None = None
+    consumo_medio: float | None = Field(default=None, ge=0)
 
 
 class CarroOut(CarroBase):
@@ -72,11 +80,11 @@ class CarroOut(CarroBase):
 class GanhoBase(CamelModel):
     data: date
     plataforma: str
-    valor_bruto: float
-    num_corridas: int | None = None
-    km: float | None = None
-    horas: float | None = None
-    gorjetas: float | None = None
+    valor_bruto: float = Field(ge=0)
+    num_corridas: int | None = Field(default=None, ge=0)
+    km: float | None = Field(default=None, ge=0)
+    horas: float | None = Field(default=None, ge=0)
+    gorjetas: float | None = Field(default=None, ge=0)
 
 
 class GanhoOut(GanhoBase):
@@ -88,10 +96,10 @@ class GanhoOut(GanhoBase):
 class AbastecimentoBase(CamelModel):
     data: date
     tipo: str
-    quantidade: float
-    preco_unitario: float
-    total: float
-    km_conta: int | None = None
+    quantidade: float = Field(ge=0)
+    preco_unitario: float = Field(ge=0)
+    total: float = Field(ge=0)
+    km_conta: int | None = Field(default=None, ge=0)
 
 
 class AbastecimentoOut(AbastecimentoBase):
@@ -104,7 +112,7 @@ class DespesaBase(CamelModel):
     data: date
     categoria: str
     descricao: str | None = None
-    valor: float
+    valor: float = Field(ge=0)
 
 
 class DespesaOut(DespesaBase):
@@ -115,12 +123,24 @@ class DespesaOut(DespesaBase):
 
 class DefinicoesBase(CamelModel):
     moeda: str = "EUR"
-    meta_diaria: float | None = None
-    meta_mensal: float | None = None
+    meta_diaria: float | None = Field(default=None, ge=0)
+    meta_mensal: float | None = Field(default=None, ge=0)
 
 
 class DefinicoesOut(DefinicoesBase):
     pass
+
+
+# --- Lembretes (inspeção, seguro, IUC, etc.) ---
+
+class LembreteBase(CamelModel):
+    tipo: str
+    descricao: str | None = None
+    data: date
+
+
+class LembreteOut(LembreteBase):
+    id: str
 
 
 # --- Resumo / estatísticas ---

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..models import Definicoes, User
-from ..schemas import LoginIn, RegisterIn, TokenOut, UserOut
+from ..schemas import LoginIn, ProfileUpdateIn, RegisterIn, TokenOut, UserOut
 from ..security import create_access_token, get_current_user, hash_password, verify_password
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -55,3 +55,31 @@ def login(body: LoginIn, db: Session = Depends(get_db)) -> TokenOut:
 @router.get("/me", response_model=UserOut)
 def me(user: User = Depends(get_current_user)) -> User:
     return user
+
+
+@router.put("/me", response_model=UserOut)
+def atualizar_perfil(
+    body: ProfileUpdateIn,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> User:
+    if db.query(User).filter(User.email == body.email, User.id != user.id).first():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email já registado")
+    if db.query(User).filter(User.username == body.username, User.id != user.id).first():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Nome de utilizador já existe"
+        )
+    user.username = body.username.strip()
+    user.primeiro_nome = body.primeiro_nome.strip()
+    user.sobrenome = body.sobrenome.strip()
+    user.email = body.email
+    user.data_nascimento = body.data_nascimento
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+@router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
+def apagar_conta(user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> None:
+    db.delete(user)
+    db.commit()

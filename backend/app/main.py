@@ -4,7 +4,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from . import models  # noqa: F401  (regista as tabelas no metadata)
 from .config import settings
 from .database import Base, engine
-from .routers import abastecimentos, auth, carros, definicoes, despesas, ganhos, resumo
+from .routers import (
+    abastecimentos,
+    auth,
+    carros,
+    definicoes,
+    despesas,
+    export,
+    ganhos,
+    lembretes,
+    resumo,
+)
 
 # Cria as tabelas se não existirem. Corre no arranque local e em cada cold start serverless
 # (no Vercel os eventos de lifespan podem não executar, por isso é feito no import).
@@ -30,6 +40,8 @@ app.include_router(abastecimentos.router)
 app.include_router(despesas.router)
 app.include_router(definicoes.router)
 app.include_router(resumo.router)
+app.include_router(lembretes.router)
+app.include_router(export.router)
 
 
 @app.get("/health", tags=["health"])

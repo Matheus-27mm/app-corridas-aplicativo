@@ -88,3 +88,13 @@ class Definicoes(Base):
     moeda: Mapped[str] = mapped_column(String(8), default="EUR")
     meta_diaria: Mapped[float | None] = mapped_column(Float, nullable=True)
     meta_mensal: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+
+class Lembrete(Base):
+    __tablename__ = "lembretes"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uuid)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    tipo: Mapped[str] = mapped_column(String(20))
+    descricao: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    data: Mapped[date] = mapped_column(Date, index=True)
