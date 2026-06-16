@@ -1,7 +1,8 @@
 import { create } from 'zustand'
 import { apiFetch } from '@/lib/api'
 import { MOEDA_PADRAO } from '@/lib/domain'
-import type { Abastecimento, Carro, Definicoes, Despesa, Ganho } from '@/types/models'
+import { setMoeda } from '@/lib/format'
+import type { Abastecimento, Carro, Definicoes, Despesa, Ganho, Lembrete } from '@/types/models'
 import { toast } from 'sonner'
 
 interface DataState {
@@ -25,6 +26,9 @@ interface DataState {
   updateAbastecimento: (id: string, abastecimento: Omit<Abastecimento, 'id'>) => Promise<void>
   updateDespesa: (id: string, despesa: Omit<Despesa, 'id'>) => Promise<void>
   updateDefinicoes: (def: Definicoes) => Promise<void>
+  lembretes: Lembrete[]
+  addLembrete: (lembrete: Omit<Lembrete, 'id'>) => Promise<void>
+  removeLembrete: (id: string) => Promise<void>
 }
 
 export const useData = create<DataState>((set) => ({
@@ -32,6 +36,7 @@ export const useData = create<DataState>((set) => ({
   ganhos: [],
   abastecimentos: [],
   despesas: [],
+  lembretes: [],
   definicoes: { moeda: MOEDA_PADRAO, metaDiaria: 80, metaMensal: 1800 },
   loading: false,
 
@@ -42,13 +47,16 @@ export const useData = create<DataState>((set) => ({
 
     set({ loading: true })
     try {
-      const [carros, ganhos, abastecimentos, despesas, definicoes] = await Promise.all([
+      const [carros, ganhos, abastecimentos, despesas, definicoes, lembretes] = await Promise.all([
         apiFetch<Carro[]>('/carros'),
         apiFetch<Ganho[]>('/ganhos'),
         apiFetch<Abastecimento[]>('/abastecimentos'),
         apiFetch<Despesa[]>('/despesas'),
         apiFetch<Definicoes>('/definicoes'),
+        apiFetch<Lembrete[]>('/lembretes'),
       ])
+
+      setMoeda(definicoes.moeda)
 
       set({
         carros,
@@ -56,6 +64,7 @@ export const useData = create<DataState>((set) => ({
         abastecimentos,
         despesas,
         definicoes,
+        lembretes,
         loading: false,
       })
     } catch (err: any) {
@@ -216,9 +225,35 @@ export const useData = create<DataState>((set) => ({
         body: JSON.stringify(def),
       })
       set({ definicoes: res })
+      setMoeda(res.moeda)
       toast.success('Definições atualizadas com sucesso!')
     } catch (err: any) {
       toast.error(err.message || 'Erro ao atualizar definições')
+      throw err
+    }
+  },
+
+  addLembrete: async (lembrete) => {
+    try {
+      const res = await apiFetch<Lembrete>('/lembretes', {
+        method: 'POST',
+        body: JSON.stringify(lembrete),
+      })
+      set((s) => ({ lembretes: [res, ...s.lembretes] }))
+      toast.success('Lembrete adicionado')
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao adicionar lembrete')
+      throw err
+    }
+  },
+
+  removeLembrete: async (id) => {
+    try {
+      await apiFetch(`/lembretes/${id}`, { method: 'DELETE' })
+      set((s) => ({ lembretes: s.lembretes.filter((x) => x.id !== id) }))
+      toast.success('Lembrete removido')
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao remover lembrete')
       throw err
     }
   },

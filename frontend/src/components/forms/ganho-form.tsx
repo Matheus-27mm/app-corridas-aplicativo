@@ -19,6 +19,7 @@ import { todayISO } from '@/lib/date'
 import { PLATAFORMAS } from '@/lib/domain'
 import { parseNum } from '@/lib/num'
 import { useData } from '@/store/data'
+import { getCurrencySymbol } from '@/lib/format'
 import type { Ganho, Plataforma } from '@/types/models'
 
 interface GanhoFormProps {
@@ -29,6 +30,7 @@ interface GanhoFormProps {
 }
 
 export function GanhoForm({ ganho, open, onOpenChange, trigger }: GanhoFormProps) {
+  const definicoes = useData((s) => s.definicoes)
   const addGanho = useData((s) => s.addGanho)
   const updateGanho = useData((s) => s.updateGanho)
 
@@ -121,7 +123,7 @@ export function GanhoForm({ ganho, open, onOpenChange, trigger }: GanhoFormProps
             <Chips options={PLATAFORMAS} value={plataforma} onChange={(v) => setPlataforma(v)} />
           </div>
           <div className="space-y-1.5">
-            <Label>Valor bruto (€)</Label>
+            <Label>Valor bruto ({getCurrencySymbol(definicoes.moeda)})</Label>
             <Input inputMode="decimal" placeholder="0,00" value={valor} onChange={(e) => setValor(e.target.value)} />
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -140,7 +142,7 @@ export function GanhoForm({ ganho, open, onOpenChange, trigger }: GanhoFormProps
               <Input inputMode="decimal" placeholder="0" value={horas} onChange={(e) => setHoras(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <Label>Gorjetas (€)</Label>
+              <Label>Gorjetas ({getCurrencySymbol(definicoes.moeda)})</Label>
               <Input inputMode="decimal" placeholder="0,00" value={gorjetas} onChange={(e) => setGorjetas(e.target.value)} />
             </div>
           </div>

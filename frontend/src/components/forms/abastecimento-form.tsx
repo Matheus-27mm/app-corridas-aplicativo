@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { todayISO } from '@/lib/date'
 import { TIPOS_ABASTECIMENTO } from '@/lib/domain'
-import { formatCurrency } from '@/lib/format'
+import { formatCurrency, getCurrencySymbol } from '@/lib/format'
 import { parseNum } from '@/lib/num'
 import { useData } from '@/store/data'
 import type { Abastecimento, TipoAbastecimento } from '@/types/models'
@@ -30,6 +30,7 @@ interface AbastecimentoFormProps {
 }
 
 export function AbastecimentoForm({ abastecimento, open, onOpenChange, trigger }: AbastecimentoFormProps) {
+  const definicoes = useData((s) => s.definicoes)
   const addAbastecimento = useData((s) => s.addAbastecimento)
   const updateAbastecimento = useData((s) => s.updateAbastecimento)
 
@@ -122,7 +123,7 @@ export function AbastecimentoForm({ abastecimento, open, onOpenChange, trigger }
               <Input inputMode="decimal" placeholder="0" value={quantidade} onChange={(e) => setQuantidade(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <Label>Preço/{unidade} (€)</Label>
+              <Label>Preço/{unidade} ({getCurrencySymbol(definicoes.moeda)})</Label>
               <Input inputMode="decimal" placeholder="0,00" value={preco} onChange={(e) => setPreco(e.target.value)} />
             </div>
           </div>

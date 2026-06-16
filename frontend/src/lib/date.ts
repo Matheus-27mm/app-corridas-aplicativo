@@ -21,3 +21,10 @@ export function parseLocalDate(iso: string): Date {
   const [y, m, d] = iso.split('-').map(Number)
   return new Date(y || 1970, (m || 1) - 1, d || 1)
 }
+
+export function getDaysRemaining(isoDate: string): number {
+  const target = parseLocalDate(isoDate)
+  const today = parseLocalDate(todayISO())
+  const diffTime = target.getTime() - today.getTime()
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+}

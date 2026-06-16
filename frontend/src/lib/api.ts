@@ -1,4 +1,8 @@
+import { toast } from 'sonner'
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+let isRedirecting = false;
 
 export class ApiError extends Error {
   status: number;
@@ -49,9 +53,13 @@ export async function apiFetch<T = any>(path: string, options: RequestInit = {})
     if (response.status === 401) {
       localStorage.removeItem('corrida_token');
       localStorage.removeItem('corrida_user');
-      // Recarregar a página para o router redirecionar para /login
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+      // Recarregar a página para o router redirecionar para /login com um aviso suave
+      if (window.location.pathname !== '/login' && !isRedirecting) {
+        isRedirecting = true;
+        toast.error("Sessão expirada, inicia sessão de novo");
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 1500);
       }
     }
     

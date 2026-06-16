@@ -58,3 +58,12 @@ export interface Definicoes {
   metaDiaria: number | null
   metaMensal: number | null
 }
+
+export type TipoLembrete = 'inspecao' | 'seguro' | 'iuc' | 'outro'
+
+export interface Lembrete {
+  id: string
+  tipo: TipoLembrete
+  descricao: string
+  data: string
+}

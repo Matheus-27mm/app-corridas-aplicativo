@@ -19,6 +19,7 @@ import { todayISO } from '@/lib/date'
 import { CATEGORIAS_DESPESA } from '@/lib/domain'
 import { parseNum } from '@/lib/num'
 import { useData } from '@/store/data'
+import { getCurrencySymbol } from '@/lib/format'
 import type { CategoriaDespesa, Despesa } from '@/types/models'
 
 interface DespesaFormProps {
@@ -29,6 +30,7 @@ interface DespesaFormProps {
 }
 
 export function DespesaForm({ despesa, open, onOpenChange, trigger }: DespesaFormProps) {
+  const definicoes = useData((s) => s.definicoes)
   const addDespesa = useData((s) => s.addDespesa)
   const updateDespesa = useData((s) => s.updateDespesa)
 
@@ -113,7 +115,7 @@ export function DespesaForm({ despesa, open, onOpenChange, trigger }: DespesaFor
             <Input placeholder="Opcional" value={descricao} onChange={(e) => setDescricao(e.target.value)} />
           </div>
           <div className="space-y-1.5">
-            <Label>Valor (€)</Label>
+            <Label>Valor ({getCurrencySymbol(definicoes.moeda)})</Label>
             <Input inputMode="decimal" placeholder="0,00" value={valor} onChange={(e) => setValor(e.target.value)} />
           </div>
           <DialogFooter>

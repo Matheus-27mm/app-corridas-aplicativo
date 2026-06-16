@@ -1,10 +1,10 @@
-import { AtSign, Calendar, Car, Eye, EyeOff, Lock, Mail, User } from 'lucide-react'
+import { AtSign, Calendar, Eye, EyeOff, Lock, Mail, User } from 'lucide-react'
 import { type FormEvent, type InputHTMLAttributes, type ReactNode, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 
-import { AppleIcon, GoogleIcon } from '@/components/brand-icons'
+import { AppleIcon, GestRunLogo, GoogleIcon } from '@/components/brand-icons'
 import { Switch } from '@/components/ui/switch'
-import { type Provedor, useAuth } from '@/store/auth'
+import { useAuth } from '@/store/auth'
 
 type Modo = 'entrar' | 'criar'
 
@@ -32,7 +32,6 @@ export function LoginPage() {
   const loading = useAuth((s) => s.loading)
   const signIn = useAuth((s) => s.signIn)
   const signUp = useAuth((s) => s.signUp)
-  const signInWithProvider = useAuth((s) => s.signInWithProvider)
 
   const [modo, setModo] = useState<Modo>('entrar')
 
@@ -114,7 +113,7 @@ export function LoginPage() {
         <div className="w-full max-w-sm rounded-3xl border border-white/12 bg-black/45 p-6 backdrop-blur-xl">
           <div className="mb-6 flex flex-col items-center text-center">
             <div className="mb-3 flex size-14 items-center justify-center rounded-2xl bg-white text-black shadow-lg shadow-black/40">
-              <Car className="size-7" strokeWidth={2.2} />
+              <GestRunLogo className="size-7" />
             </div>
             <p className="text-[11px] font-bold tracking-[0.3em] text-white/60">GESTRUN</p>
             <h1 className="mt-1 text-2xl font-bold text-white">
@@ -210,9 +209,6 @@ export function LoginPage() {
                   <Switch checked={lembrar} onCheckedChange={setLembrar} />
                   Lembrar-me
                 </label>
-                <button type="button" className="text-sm text-white/70 hover:text-white">
-                  Esqueceste-te?
-                </button>
               </div>
             ) : null}
 
@@ -234,17 +230,17 @@ export function LoginPage() {
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
-              onClick={() => signInWithProvider('google' as Provedor)}
-              className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-medium text-white transition-colors hover:bg-white/10"
+              disabled
+              className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-medium text-white/40 transition-colors opacity-50 cursor-not-allowed"
             >
-              <GoogleIcon className="size-4" /> Google
+              <GoogleIcon className="size-4 opacity-50" /> Google <span className="text-[10px] opacity-75">(Em breve)</span>
             </button>
             <button
               type="button"
-              onClick={() => signInWithProvider('apple' as Provedor)}
-              className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-medium text-white transition-colors hover:bg-white/10"
+              disabled
+              className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-medium text-white/40 transition-colors opacity-50 cursor-not-allowed"
             >
-              <AppleIcon className="size-4" /> Apple
+              <AppleIcon className="size-4 opacity-50" /> Apple <span className="text-[10px] opacity-75">(Em breve)</span>
             </button>
           </div>
 

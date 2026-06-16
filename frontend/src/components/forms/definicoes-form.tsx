@@ -13,6 +13,14 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { getCurrencySymbol } from '@/lib/format'
 import { parseNum } from '@/lib/num'
 import { useData } from '@/store/data'
 
@@ -60,14 +68,23 @@ export function DefinicoesForm() {
         <form onSubmit={guardar} className="space-y-4">
           <div className="space-y-1.5">
             <Label>Moeda</Label>
-            <Input value={moeda} onChange={(e) => setMoeda(e.target.value)} placeholder="EUR" />
+            <Select value={moeda} onValueChange={setMoeda}>
+              <SelectTrigger className="w-full border-white/12 bg-white/[0.06] hover:bg-white/10 text-white rounded-xl">
+                <SelectValue placeholder="Escolhe uma moeda" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="EUR">EUR (€)</SelectItem>
+                <SelectItem value="USD">USD ($)</SelectItem>
+                <SelectItem value="BRL">BRL (R$)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-1.5">
-            <Label>Meta diária (€)</Label>
+            <Label>Meta diária ({getCurrencySymbol(moeda)})</Label>
             <Input inputMode="decimal" value={metaDiaria} onChange={(e) => setMetaDiaria(e.target.value)} placeholder="80" />
           </div>
           <div className="space-y-1.5">
-            <Label>Meta mensal (€)</Label>
+            <Label>Meta mensal ({getCurrencySymbol(moeda)})</Label>
             <Input inputMode="decimal" value={metaMensal} onChange={(e) => setMetaMensal(e.target.value)} placeholder="1800" />
           </div>
           <DialogFooter>

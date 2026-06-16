@@ -31,6 +31,14 @@ interface AuthState {
   signInWithProvider: (provedor: Provedor) => void
   signOut: () => void
   checkAuth: () => Promise<void>
+  updateProfile: (payload: {
+    username: string
+    primeiroNome: string
+    sobrenome: string
+    email: string
+    dataNascimento: string
+  }) => Promise<void>
+  deleteAccount: () => Promise<void>
 }
 
 const getStoredUser = (): Utilizador | null => {
@@ -133,6 +141,38 @@ export const useAuth = create<AuthState>((set) => ({
       localStorage.removeItem('corrida_token')
       localStorage.removeItem('corrida_user')
       set({ user: null })
+    }
+  },
+
+  updateProfile: async (payload) => {
+    set({ loading: true })
+    try {
+      const user = await apiFetch<Utilizador>('/auth/me', {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+      })
+      localStorage.setItem('corrida_user', JSON.stringify(user))
+      set({ user, loading: false })
+      toast.success('Perfil atualizado com sucesso!')
+    } catch (err: any) {
+      set({ loading: false })
+      toast.error(err.message || 'Erro ao atualizar perfil.')
+      throw err
+    }
+  },
+
+  deleteAccount: async () => {
+    set({ loading: true })
+    try {
+      await apiFetch('/auth/me', { method: 'DELETE' })
+      localStorage.removeItem('corrida_token')
+      localStorage.removeItem('corrida_user')
+      set({ user: null, loading: false })
+      toast.success('Conta apagada com sucesso.')
+    } catch (err: any) {
+      set({ loading: false })
+      toast.error(err.message || 'Erro ao apagar conta.')
+      throw err
     }
   },
 }))

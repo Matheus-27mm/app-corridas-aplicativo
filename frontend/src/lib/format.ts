@@ -1,7 +1,24 @@
 import { parseLocalDate } from '@/lib/date'
 import { LOCALE, MOEDA_PADRAO } from '@/lib/domain'
 
-export function formatCurrency(value: number, currency: string = MOEDA_PADRAO): string {
+let currentCurrency = MOEDA_PADRAO
+
+export function setMoeda(currency: string) {
+  currentCurrency = currency
+}
+
+export function getCurrencySymbol(currency: string = currentCurrency): string {
+  try {
+    const formatter = new Intl.NumberFormat(LOCALE, { style: 'currency', currency })
+    const parts = formatter.formatToParts(0)
+    const symbolPart = parts.find((part) => part.type === 'currency')
+    return symbolPart ? symbolPart.value : currency
+  } catch {
+    return currency
+  }
+}
+
+export function formatCurrency(value: number, currency: string = currentCurrency): string {
   return new Intl.NumberFormat(LOCALE, { style: 'currency', currency }).format(value)
 }
 

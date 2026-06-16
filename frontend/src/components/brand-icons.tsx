@@ -9,6 +9,25 @@ export function GoogleIcon({ className }: { className?: string }) {
   )
 }
 
+export function GestRunLogo({ className }: { className?: string }) {
+  // Símbolo da marca (3 nós → 1) em monocromático: herda a cor via currentColor.
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
+      <g stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+        <line x1="6" y1="5" x2="17.5" y2="12" />
+        <line x1="6" y1="12" x2="17.5" y2="12" />
+        <line x1="6" y1="19" x2="17.5" y2="12" />
+      </g>
+      <g fill="currentColor">
+        <circle cx="6" cy="5" r="2.4" />
+        <circle cx="6" cy="12" r="2.4" />
+        <circle cx="6" cy="19" r="2.4" />
+        <circle cx="17.5" cy="12" r="3.4" />
+      </g>
+    </svg>
+  )
+}
+
 export function AppleIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
