@@ -1,9 +1,12 @@
-const CACHE_NAME = 'gestrun-cache-v2';
+const CACHE_NAME = 'gestrun-cache-v3';
 const ASSETS = [
   '/',
   '/index.html',
   '/favicon.svg',
   '/manifest.json',
+  '/pwa-192.png',
+  '/pwa-512.png',
+  '/apple-touch-icon.png',
   '/povdriving.mp4'
 ];
 
