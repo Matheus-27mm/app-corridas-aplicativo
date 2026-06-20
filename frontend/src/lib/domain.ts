@@ -27,11 +27,13 @@ export const TIPOS_ABASTECIMENTO: Opcao<TipoAbastecimento>[] = [
 
 export const CATEGORIAS_DESPESA: Opcao<CategoriaDespesa>[] = [
   { value: 'aluguer', label: 'Aluguer' },
-  { value: 'manutencao', label: 'Manutenção' },
+  { value: 'combustivel', label: 'Combustível' },
+  { value: 'manutencao', label: 'Reparações' },
   { value: 'seguro', label: 'Seguro' },
   { value: 'iuc', label: 'IUC' },
+  { value: 'portagem', label: 'Via Verde' },
   { value: 'inspecao', label: 'Inspeção' },
-  { value: 'portagem', label: 'Portagem' },
+  { value: 'caucao', label: 'Caução' },
   { value: 'comida', label: 'Comida' },
   { value: 'lavagem', label: 'Lavagem' },
   { value: 'outro', label: 'Outro' },

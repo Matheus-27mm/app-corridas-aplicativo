@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { JornadaDia } from '@/components/jornada-dia'
+import { LancamentoSemanal } from '@/components/forms/lancamento-semanal'
 import { PageHeader } from '@/components/page-header'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -421,8 +422,12 @@ export function InicioPage() {
     <>
       <PageHeader title="Início" subtitle="Resumo financeiro" />
 
-      <div className="mb-4">
+      <div className="mb-3">
         <JornadaDia />
+      </div>
+
+      <div className="mb-4">
+        <LancamentoSemanal />
       </div>
 
       {resumo === null && !isMock && !resumoLoading && (

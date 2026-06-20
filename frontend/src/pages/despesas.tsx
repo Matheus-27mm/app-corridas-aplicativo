@@ -27,7 +27,7 @@ export function DespesasPage() {
     <>
       <PageHeader
         title="Despesas"
-        subtitle="Manutenção, seguro, IUC, portagens…"
+        subtitle="Aluguer, combustível, Via Verde, reparações…"
         action={<DespesaForm />}
       />
 

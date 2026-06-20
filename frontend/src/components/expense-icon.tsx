@@ -1,9 +1,11 @@
 import {
   ClipboardCheck,
   Droplets,
+  Fuel,
   KeyRound,
   Landmark,
   Milestone,
+  PiggyBank,
   ShieldCheck,
   Tag,
   Utensils,
@@ -15,11 +17,13 @@ import type { CategoriaDespesa } from '@/types/models'
 
 const ICONS: Record<CategoriaDespesa, LucideIcon> = {
   aluguer: KeyRound,
+  combustivel: Fuel,
   manutencao: Wrench,
   seguro: ShieldCheck,
   iuc: Landmark,
   inspecao: ClipboardCheck,
   portagem: Milestone,
+  caucao: PiggyBank,
   comida: Utensils,
   lavagem: Droplets,
   outro: Tag,
